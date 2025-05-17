@@ -7,6 +7,7 @@ if [ "$(id -u)" != "0" ]; then
     exit 1
 fi
 
+
 # 脚本保存路径
 SCRIPT_PATH="$HOME/Ritual.sh"
 
@@ -21,34 +22,40 @@ function main_menu() {
         echo "退出脚本，请按键盘 ctrl + C 退出即可"
         echo "请选择要执行的操作:"
         echo "1) 安装 Ritual 节点"
-        echo "2. 查看 Ritual 节点日志"
-        echo "3. 删除 Ritual 节点"
-        echo "4. 退出脚本"
+        echo "2) 查看 Ritual 节点日志"
+        echo "3) 删除 Ritual 节点"
+        echo "4) 重启 Ritual 节点"
+        echo "5) 退出脚本"
+
         
         read -p "请输入您的选择: " choice
-
-        case $choice in
-            1) 
-                install_ritual_node
-                ;;
-            2)
-                view_logs
-                ;;
-            3)
-                remove_ritual_node
-                ;;
-            4)
-                echo "退出脚本！"
-                exit 0
-                ;;
-            *)
-                echo "无效选项，请重新选择。"
-                ;;
-        esac
-
+case $choice in
+    1) install_ritual_node ;;
+    2) view_logs ;;
+    3) remove_ritual_node ;;
+    4) restart_ritual_node ;;
+    5) echo "退出脚本！"; exit 0 ;;
+    *) echo "无效选项，请重新选择。" ;;
+esac
         echo "按任意键继续..."
         read -n 1 -s
     done
+}
+
+# 重启 Ritual 节点
+function restart_ritual_node() {
+    echo "正在重启 Ritual 节点..."
+
+    cd /root/infernet-container-starter || { echo "[错误] 找不到部署目录"; return 1; }
+
+    echo "关闭正在运行的容器..."
+    docker compose -f deploy/docker-compose.yaml down
+
+    echo "重新启动容器..."
+    docker compose -f deploy/docker-compose.yaml up -d
+
+    echo "[提示] 节点已重启。使用 docker logs infernet-node 查看日志。"
+    read -n 1 -s -r -p "按任意键返回主菜单..."
 }
 
 # 修改 docker-compose.yaml 文件端口映射
